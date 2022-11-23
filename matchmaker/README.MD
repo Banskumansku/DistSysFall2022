@@ -6,6 +6,11 @@ Matchmaker
 - Run with ``npm start``
 
 ***DO NOT REVEAL CONTENTS OF .ENV***
+- To .env add
+  - PORT
+  - MONGODB_URI
+  - DB_NAME
+  - PLAYER_DB_NAME
 
 Database
 - MongoDB
