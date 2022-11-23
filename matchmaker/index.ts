@@ -17,7 +17,7 @@ app.get('/queue', async (req: Request, res: Response) => {
 
 connectToDatabase()
     .then(() => {
-        app.use("/games", playerRouter);
+        app.use("/player", playerRouter);
 
         app.listen(port, () => {
             console.log(`Server started at http://localhost:${port}`);
