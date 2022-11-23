@@ -1,0 +1,4 @@
+Matchmaker
+- Simple express typescript server
+- Adds people to queue and when two are present sends IP to each other
+- Takes in victories/losses
