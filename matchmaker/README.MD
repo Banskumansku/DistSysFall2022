@@ -6,3 +6,7 @@ Matchmaker
 - Run with ``npm start``
 
 ***DO NOT REVEAL CONTENTS OF .ENV***
+
+Database
+- MongoDB
+- Return results to Matchmaker queries
