@@ -4,3 +4,5 @@ Matchmaker
 - Takes in victories/losses
 - Install with ``npm install``
 - Run with ``npm start``
+
+***DO NOT REVEAL CONTENTS OF .ENV***
