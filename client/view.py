@@ -3,6 +3,10 @@ import pygame
 # draws different game views (start view, wait view, game view, game over view)
 
 class MainView():
+
+    def draw(self):
+        pass
+
     def handle_event(self, event):
         pass
         # if event.type == KEYUP:
@@ -10,9 +14,16 @@ class MainView():
         #    scene = scenes['Battle']
 
 
+    def update(self):
+        view = views['Main']
+
+
 class WaitView():
     def draw(self):
         # draw your animation
+        pass
+
+    def handle_event(self, event):
         pass
 
     def update(self):
@@ -25,6 +36,9 @@ class GameView():
         # draw your animation
         pass
 
+    def handle_event(self, event):
+        pass
+
     def update(self):
         # if game is over:
         view = views['GameEnd']
@@ -32,6 +46,9 @@ class GameView():
 
 class GameEndView():
     def draw(self):
+        pass
+
+    def handle_event(self, event):
         pass
 
     def update(self):
@@ -47,6 +64,14 @@ view = views['Main']
 clock = pygame.time.Clock()
 
 def main_game():
+
+    fpsClock = pygame.time.Clock()
+
+    width, height = 640, 480
+    screen = pygame.display.set_mode((width, height))
+
+    pygame.init()
+
     ending = False
     while ending == False:
         clock.tick(30)
