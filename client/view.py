@@ -1,0 +1,1 @@
+# draws different game views (start view, waiting view, game view, game over view)
