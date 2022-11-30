@@ -1,1 +1,4 @@
 # coordinates messages
+
+class EventManager()
+
