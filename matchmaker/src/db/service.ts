@@ -1,5 +1,6 @@
 import * as mongoDB from "mongodb";
 import * as dotenv from "dotenv";
+import Player from "./models/Player";
 
 // External Dependencies
 
@@ -19,6 +20,13 @@ export const connectToDatabase = async () => {
     const db: mongoDB.Db = client.db(process.env.DB_NAME);
     const playerCollection: mongoDB.Collection = db.collection(process.env.PLAYER_DB_NAME!);
     collections.players = playerCollection;
-
-    return `Successfully connected to database: ${db.databaseName}`;
+    const player: Player = {
+        name: "asd",
+        wins: 2,
+        losses: 1
+    }
+    const play = (await collections.players.find({}).toArray()) as unknown as Player[];
+    //const asd = await collections.players.insertOne(player)
+    console.log(play)
+    return `Successfully connected to database: ${db.databaseName} `;
 }

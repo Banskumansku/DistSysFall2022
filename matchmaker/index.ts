@@ -1,6 +1,5 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
-import * as mongoDB from "mongodb";
 import { connectToDatabase } from './src/db/service';
 import { playerRouter } from './src/db/players';
 
