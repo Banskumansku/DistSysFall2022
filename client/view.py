@@ -1,21 +1,25 @@
 import pygame
 import model
+from eventmanager import EventManager, ChangeViewEvent, BroadcastEvent
+from broadcast import Broadcaster
+import time
 
 # draws different game views (start view, wait view, game view, game over view)
 
 
 class MainView():
 
+    def __init__(self):
+        self.button1 = model.Button(
+            "Start a new game",
+            (100, 100),
+            16)
+
     def draw(self, screen):
         screen.fill((0, 0, 0))  # Fill the screen with black.
 
-        # Redraw screen here.
-        button1 = model.Button(
-            "Start a new game",
-            (100, 100),
-            screen)
-        screen.blit(button1.surface, (self.x, self.y))
-        button1.click(event)
+        # Redraw screen here
+        self.button1.show(screen)
 
         # Flip the display so that the things we drew actually show up.
         pygame.display.flip()
@@ -23,14 +27,8 @@ class MainView():
         pass
 
     def handle_event(self, event):
-        button1.click(event)
-        pass
-        # if event.type == KEYUP:
-        #  if event.key == K_a:
-        #    scene = scenes['Battle']
-
-    def update(self, dt):
-        view = views['Main']
+        if event.type == 1026 and self.button1.is_within_bounds(event.pos[0], event.pos[1]):
+            return [ChangeViewEvent("Wait"), BroadcastEvent("http://localhost", '{"name":"test", "id":"1", "Pikku kakkosen posti"}')]
 
 
 class WaitView():
@@ -48,10 +46,6 @@ class WaitView():
     def handle_event(self, event):
         pass
 
-    def update(self, dt):
-        # if opponent has been found:
-        view = views['Game']
-
 
 class GameView():
     def draw(self, screen):
@@ -68,11 +62,6 @@ class GameView():
     def handle_event(self, event):
         pass
 
-    def update(self, dt):
-        # if game is over:
-        view = views['GameEnd']
-
-
 class GameEndView():
     def draw(screen):
         screen.fill((0, 0, 0))  # Fill the screen with black.
@@ -87,19 +76,20 @@ class GameEndView():
     def handle_event(self, event):
         pass
 
-    def update(self, dt):
-        # if player wants to play again
-        view = views['Wait']
-
-
-views = {'Main': MainView(),
-         'Wait': WaitView(),
-         'Game': GameView(),
-         'GameEnd': GameEndView()}
-
-view = views['Main']
 clock = pygame.time.Clock()
 
+class ViewManager():
+    def __init__(self):
+
+        self.views = {'Main': MainView(),
+                      'Wait': WaitView(),
+                      'Game': GameView(),
+                      'GameEnd': GameEndView()}
+        self.view = self.views["Main"]
+
+    def notify(self, event):
+        if isinstance(event, ChangeViewEvent):
+            self.view = self.views[event.view]
 
 def main_game():
 
@@ -111,14 +101,30 @@ def main_game():
 
     pygame.init()
 
+    e = EventManager()
+    e.StartNotifying()
+
+    v = ViewManager()
+    e.RegisterListener(v)
+
+    b = Broadcaster()
+    e.RegisterListener(b)
+
     dt = 1/fps
     ending = False
     while ending == False:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 ending = True
-            view.handle_event(event)
-            view.update(dt)
-            view.draw(screen)
+
+            # Handle pygame event
+            # Potentially move event to event manager
+
+            result = v.view.handle_event(event)
+            if result != None:
+                for event in result:
+                    e.Post(event)
+
+            v.view.draw(screen)
 
             dt = fpsClock.tick(fps)

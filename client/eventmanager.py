@@ -52,6 +52,11 @@ class BroadcastEvent(Event):
         self.target = target
         self.payload = payload
 
+
+class ChangeViewEvent(Event):
+    def __init__(self, view):
+        self.view = view
+
 class EventManager(object):
     """
     Coordinate communication between various parts of the program.

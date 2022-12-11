@@ -9,7 +9,7 @@ class Button:
  
     def __init__(self, text,  pos, font, bg="black", feedback=""):
         self.x, self.y = pos
-        self.font = pygame.font.SysFont("Arial", font)
+        self.font = pygame.font.SysFont("Sans", font)
         if feedback == "":
             self.feedback = "text"
         else:
@@ -17,7 +17,7 @@ class Button:
         self.change_text(text, bg)
  
     def change_text(self, text, bg="black"):
-        """Change the text whe you click"""
+        """Change the text when you click"""
         self.text = self.font.render(text, 1, pygame.Color("White"))
         self.size = self.text.get_size()
         self.surface = pygame.Surface(self.size)
@@ -25,8 +25,15 @@ class Button:
         self.surface.blit(self.text, (0, 0))
         self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
  
-    def show(self, screen, button):
-        screen.blit(button.surface, (self.x, self.y))
+    def show(self, screen):
+        screen.blit(self.surface, (self.x, self.y))
+
+    def is_within_bounds(self, x, y):
+        if self.x > x or self.y > y:
+            return False
+        if self.x + self.size[0] < x or self.y + self.size[1] < y:
+            return False
+        return True
 
 class Grid():
     pass
