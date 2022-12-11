@@ -1,3 +1,6 @@
+from queue import Queue
+import threading
+
 # coordinates messages
 # some of the code is still copy paste from a tutorial
 
@@ -33,28 +36,32 @@ class InputEvent(Event):
     def __str__(self):
         return '%s, char=%s, clickpos=%s' % (self.name, self.char, self.clickpos)
 
+class RemoveListenerEvent(Event):
+    def __init__(self, listener):
+        self.name = "Remove listener event"
+        self.listener = listener
 
-class InitializeEvent(Event):
-    """
-    Tells all listeners to initialize themselves.
-    This includes loading libraries and resources.
+class AddListenerEvent(Event):
+    def __init__(self, listener):
+        self.name = "Add listener event"
+        self.listener = listener
 
-    Better than initializing within listener __init__ calls
-    (some might rely on others that are not yet created)
-    """
-
-    def __init__(self):
-        self.name = "Initialize event"
-
+class BroadcastEvent(Event):
+    def __init__(self, target, payload):
+        self.name = "Broadcast event"
+        self.target = target
+        self.payload = payload
 
 class EventManager(object):
     """
-    Coordinate communication between Model, View, and Controller.
+    Coordinate communication between various parts of the program.
+    Use thread-safe queue object to order events.
+    Commit to delivering all events between registration and unregistration.
     """
 
     def __init__(self):
-        from weakref import WeakKeyDictionary
-        self.listeners = WeakKeyDictionary()
+        self.listeners = set()
+        self.queue = Queue()
 
     def RegisterListener(self, listener):
         """ 
@@ -62,7 +69,7 @@ class EventManager(object):
         It will receive Post()ed events through it's notify(event) call. 
         """
 
-        self.listeners[listener] = 1
+        self.queue.put(AddListenerEvent(listener))
 
     def UnregisterListener(self, listener):
         """ 
@@ -71,14 +78,34 @@ class EventManager(object):
         Our weak ref spam list will auto remove any listeners who stop existing.
         """
 
-        if listener in self.listeners.keys():
-            del self.listeners[listener]
+        self.queue.put(RemoveListenerEvent(listener))
 
     def Post(self, event):
         """
         Post a new event to the message queue.
-        It will be broadcast to all listeners.
         """
 
-        for listener in self.listeners.keys():
-            listener.notify(event)
+        self.queue.put(event)
+
+    def StartNotifying(self):
+        def subfunction():
+            while True:
+                event = self.queue.get()
+
+                # These relate to managing the queue and are internal
+
+                if isinstance(event, RemoveListenerEvent):
+                    self.listeners.remove(event.listener)
+                if isinstance(event, AddListenerEvent):
+                    self.listeners.add(event.listener)
+
+                # These are actually broadcast
+
+                else:
+                    for listener in self.listeners:
+                        listener.notify(event)
+
+        t = threading.Thread(target=subfunction)
+        t.start()
+
+        self.Post("E: Started event manager")

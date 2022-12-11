@@ -1,11 +1,20 @@
 import cherrypy
 import threading
 import json
+from eventmanager import EventManager, QuitEvent
 
 class Server():
 
     def __init__(self):
         self.running = threading.Lock()
+
+    def set_event_manager(self, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.RegisterListener(self)
+
+    def notify(self, event):
+        if isinstance(event, QuitEvent):
+            self.stop()
 
     def serve(self, port):
 
