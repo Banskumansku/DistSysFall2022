@@ -1,6 +1,5 @@
 import * as mongoDB from "mongodb";
 import * as dotenv from "dotenv";
-import Player from "./models/Player";
 
 // External Dependencies
 
