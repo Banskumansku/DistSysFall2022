@@ -1,5 +1,6 @@
 import cherrypy
 import threading
+import json
 
 class Server():
 
@@ -24,8 +25,33 @@ class Server():
         self.running.release()
         
     def reply(self, environ, start_response):
-        status = '200 OK'
-        headers = [('Content-type', 'text/plain; charset=utf-8')]
-        start_response(status, headers)
+        if environ["PATH_INFO"] == "/matchmaking-success" and environ["REQUEST_METHOD"] == "POST":
 
-        return [f"Server is running".encode("utf-8")]
+            # Matchmaking is succeeding, yay
+
+            try:
+
+                # TODO: Very light validation so far
+
+                opponents = json.loads(environ['wsgi.input'].read().decode("utf-8"))["opponents"]
+            except (json.decoder.JSONDecodeError, KeyError):
+
+                # Garbage data
+
+                status = '400 BAD REQUEST'
+                headers = [('Content-type', 'text/plain; charset=utf-8')]
+                start_response(status, headers)
+
+                return [f"Bad request".encode("utf-8")]
+
+            status = '200 OK'
+            headers = [('Content-type', 'text/plain; charset=utf-8')]
+            start_response(status, headers)
+
+            return [f"Received opponents {opponents}".encode("utf-8")]
+        else:
+            status = "404 NOT FOUND"
+            headers = [('Content-type', 'text/plain; charset=utf-8')]
+            start_response(status, headers)
+
+            return [f"Not found".encode("utf-8")]
