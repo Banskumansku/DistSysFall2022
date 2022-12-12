@@ -26,7 +26,7 @@ class Controller():
         # The matchmaker told the client something about it getting on the queue
 
         if isinstance(event, ReplyEvent) and event.target.split("/")[-1] == "request-match":
-            if event.payload == "success":
+            if event.payload == {"status": "success"}:
                 print("Got on queue successfully")
                 self.event_manager.Post(ChangeViewEvent("Wait"))
             else:

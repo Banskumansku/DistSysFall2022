@@ -49,19 +49,19 @@ class Server():
                 # Garbage data
 
                 status = '400 BAD REQUEST'
-                headers = [('Content-type', 'text/plain; charset=utf-8')]
+                headers = [('Content-type', 'application/json; charset=utf-8')]
                 start_response(status, headers)
 
-                return [f"Bad request".encode("utf-8")]
+                return ['{"error": "bad request"}'.encode("utf-8")]
 
             status = '200 OK'
-            headers = [('Content-type', 'text/plain; charset=utf-8')]
+            headers = [('Content-type', 'application/json; charset=utf-8')]
             start_response(status, headers)
 
-            return [f"Received opponents {opponents}".encode("utf-8")]
+            return ['{"status": "success"}'.encode("utf-8")]
         else:
             status = "404 NOT FOUND"
-            headers = [('Content-type', 'text/plain; charset=utf-8')]
+            headers = [('Content-type', 'application/json; charset=utf-8')]
             start_response(status, headers)
 
-            return [f"Not found".encode("utf-8")]
+            return ['{"error":"not found"}'.encode("utf-8")]

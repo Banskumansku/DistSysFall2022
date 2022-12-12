@@ -17,7 +17,7 @@ class Broadcaster():
             print("------ End broadcast -----")
             print("----- Commence reply -----")
             try:
-                result = requests.post(event.target, event.payload).text
+                result = requests.post(event.target, event.payload).json()
             except:
                 result = None
             print(result)
