@@ -27,3 +27,7 @@ class Controller():
                 self.event_manager.Post(ChangeViewEvent("Wait"))
             else:
                 print("Failed to get on queue")
+
+        if isinstance(event, ReplyEvent) and event.target.split("/")[-1] == "matchmaking-success":
+            print(f"Start game with players {event.payload}")
+            self.event_manager.Post(ChangeViewEvent("Game"))

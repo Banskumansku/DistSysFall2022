@@ -1,7 +1,7 @@
 import cherrypy
 import threading
 import json
-from eventmanager import EventManager, QuitEvent
+from eventmanager import EventManager, QuitEvent, ReplyEvent
 
 class Server():
 
@@ -43,6 +43,7 @@ class Server():
                 # TODO: Very light validation so far
 
                 opponents = json.loads(environ['wsgi.input'].read().decode("utf-8"))["opponents"]
+                self.event_manager.Post(ReplyEvent("//matchmaking-success", opponents))
             except (json.decoder.JSONDecodeError, KeyError):
 
                 # Garbage data
