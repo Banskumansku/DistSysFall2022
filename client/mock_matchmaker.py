@@ -1,6 +1,9 @@
 import cherrypy
 
 def reply(environ, start_response):
+    print("PATH_INFO", environ["PATH_INFO"])
+    print("REQUEST_METHOD", environ["REQUEST_METHOD"])
+    print("wsgi.input", environ["wsgi.input"].read())
     if environ["PATH_INFO"] == "/request-match" and environ["REQUEST_METHOD"] == "POST":
         status = '200 OK'
         headers = [('Content-type', 'text/plain; charset=utf-8')]
