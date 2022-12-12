@@ -1,6 +1,7 @@
 # contains game logic and handles messages with event manager
 
 from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent
+import json
 
 class Controller():
     def __init__(self, context):
@@ -17,7 +18,10 @@ class Controller():
         # The player asked to be put on the queue
 
         if isinstance(event, RequestQueueEvent):
-            self.event_manager.Post(BroadcastEvent(self.context["MATCHMAKER"]+"/request-match", '{"name":"test", "id":"1", "Pikku kakkosen posti"}'))
+            self.event_manager.Post(BroadcastEvent(self.context["MATCHMAKER"]+"/request-match",
+                                                   json.dumps({"name": self.context["NAME"],
+                                                               "id": None,
+                                                                "return_url": self.context["RETURN_ADDRESS"]})))
 
         # The matchmaker told the client something about it getting on the queue
 
