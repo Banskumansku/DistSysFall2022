@@ -1,6 +1,6 @@
 import pygame
 import model
-from eventmanager import EventManager, ChangeViewEvent, BroadcastEvent
+from eventmanager import EventManager, ChangeViewEvent, RequestQueueEvent
 from broadcast import Broadcaster
 import time
 
@@ -28,7 +28,7 @@ class MainView():
 
     def handle_event(self, event):
         if event.type == 1026 and self.button1.is_within_bounds(event.pos[0], event.pos[1]):
-            return [ChangeViewEvent("Wait"), BroadcastEvent("http://localhost", '{"name":"test", "id":"1", "Pikku kakkosen posti"}')]
+            return [RequestQueueEvent()]
 
 
 class WaitView():
@@ -76,55 +76,58 @@ class GameEndView():
     def handle_event(self, event):
         pass
 
-clock = pygame.time.Clock()
-
 class ViewManager():
-    def __init__(self):
 
+    def __init__(self):
+        self.views = {'Main': None,
+                      'Wait': None,
+                      'Game': None,
+                      'GameEnd': None}
+        self.view = "Main"
+
+    def init_views(self):
         self.views = {'Main': MainView(),
                       'Wait': WaitView(),
                       'Game': GameView(),
                       'GameEnd': GameEndView()}
-        self.view = self.views["Main"]
+
+    def set_event_manager(self, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.RegisterListener(self)
 
     def notify(self, event):
         if isinstance(event, ChangeViewEvent):
-            self.view = self.views[event.view]
+            self.view = event.view
 
-def main_game():
+    def main_game(self):
 
-    fps = 60.0
-    fpsClock = pygame.time.Clock()
+        clock = pygame.time.Clock()
 
-    width, height = 640, 480
-    screen = pygame.display.set_mode((width, height))
+        fps = 60.0
+        fpsClock = pygame.time.Clock()
 
-    pygame.init()
+        width, height = 640, 480
+        screen = pygame.display.set_mode((width, height))
 
-    e = EventManager()
-    e.StartNotifying()
+        pygame.init()
 
-    v = ViewManager()
-    e.RegisterListener(v)
+        self.init_views()
 
-    b = Broadcaster()
-    e.RegisterListener(b)
+        dt = 1/fps
+        ending = False
+        while ending == False:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    ending = True
 
-    dt = 1/fps
-    ending = False
-    while ending == False:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                ending = True
+                # Handle pygame event
+                # Potentially move event to event manager
 
-            # Handle pygame event
-            # Potentially move event to event manager
+                result = self.views[self.view].handle_event(event)
+                if result != None:
+                    for event in result:
+                        self.event_manager.Post(event)
 
-            result = v.view.handle_event(event)
-            if result != None:
-                for event in result:
-                    e.Post(event)
+                self.views[self.view].draw(screen)
 
-            v.view.draw(screen)
-
-            dt = fpsClock.tick(fps)
+                dt = fpsClock.tick(fps)

@@ -52,10 +52,21 @@ class BroadcastEvent(Event):
         self.target = target
         self.payload = payload
 
+class ReplyEvent(Event):
+    def __init__(self, target, payload):
+        self.name = "Reply event"
+        self.target = target
+        self.payload = payload
 
 class ChangeViewEvent(Event):
     def __init__(self, view):
+        self.name = "ChangeView event"
         self.view = view
+
+class RequestQueueEvent():
+    def __init__(self):
+        self.name = "RequestQueue event"
+        pass
 
 class EventManager(object):
     """

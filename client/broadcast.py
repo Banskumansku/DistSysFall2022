@@ -1,9 +1,13 @@
-from eventmanager import EventManager, BroadcastEvent
+from eventmanager import EventManager, BroadcastEvent, ReplyEvent
 import requests
 
 class Broadcaster():
     def __init__(self):
         pass
+
+    def set_event_manager(self, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.RegisterListener(self)
 
     def notify(self, event):
         if isinstance(event, BroadcastEvent):
@@ -12,5 +16,10 @@ class Broadcaster():
             print(f"Payload: {event.payload}")
             print("------ End broadcast -----")
             print("----- Commence reply -----")
-            print(requests.post(event.target, event.payload).text)
+            try:
+                result = requests.post(event.target, event.payload).text
+            except:
+                result = None
+            print(result)
             print("------- End reply --------")
+            self.event_manager.Post(ReplyEvent(event.target, result))
