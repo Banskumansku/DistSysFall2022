@@ -116,6 +116,12 @@ class ViewManager():
         dt = 1/fps
         ending = False
         while ending == False:
+
+            # Redraw every frame even if no event was incoming
+
+            self.views[self.view].draw(screen)
+            dt = fpsClock.tick(fps)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     ending = True
@@ -127,7 +133,3 @@ class ViewManager():
                 if result != None:
                     for event in result:
                         self.event_manager.Post(event)
-
-                self.views[self.view].draw(screen)
-
-                dt = fpsClock.tick(fps)
