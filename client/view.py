@@ -33,7 +33,7 @@ class MainView():
 
 class WaitView():
     def draw(self, screen):
-        screen.fill((0, 0, 0))  # Fill the screen with black.
+        screen.fill((255, 0, 0))  # Fill the screen with red.
 
         # Redraw screen here.
 
@@ -49,7 +49,7 @@ class WaitView():
 
 class GameView():
     def draw(self, screen):
-        screen.fill((0, 0, 0))  # Fill the screen with black.
+        screen.fill((0, 255, 0))  # Fill the screen with green.
 
         # Redraw screen here.
 
@@ -64,7 +64,7 @@ class GameView():
 
 class GameEndView():
     def draw(screen):
-        screen.fill((0, 0, 0))  # Fill the screen with black.
+        screen.fill((0, 0, 255))  # Fill the screen with blue.
 
         # Redraw screen here.
 
