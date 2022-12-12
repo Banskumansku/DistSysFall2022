@@ -6,9 +6,16 @@ from server import Server
 
 import sys
 
+
+try:
+    context = {"MATCHMAKER": sys.argv[1], "RETURN_ADDRESS": sys.argv[2], "NAME": sys.argv[3]}
+except IndexError:
+    print("usage: main.py <matchmaker address> <return address> <name>")
+    sys.exit(1)
+
 e = EventManager()
 
-c = Controller({"MATCHMAKER": sys.argv[-1]})
+c = Controller(context)
 c.set_event_manager(e)
 
 b = Broadcaster()
