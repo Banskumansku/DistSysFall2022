@@ -94,7 +94,7 @@ playerRouter.put("/loss/:id", async (req: Request, res: Response) => {
         const result = await collections!.players!.updateOne(query, { $set: updated });
 
         result
-            ? res.status(200).send(`Successfully added win with id ${id}`)
+            ? res.status(200).send(`Successfully added loss with id ${id}`)
             : res.status(304).send(`Player with id: ${id} not updated`);
     } catch (error: any) {
         console.error(error.message);
