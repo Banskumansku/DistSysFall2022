@@ -13,6 +13,7 @@ class MockServer():
         t.start()
 
         cherrypy.config.update({'server.socket_port': 1337})
+        cherrypy.config.update({'server.socket_host': '0.0.0.0'})
 
         cherrypy.tree.graft(self.reply, '/')
         cherrypy.engine.start()
