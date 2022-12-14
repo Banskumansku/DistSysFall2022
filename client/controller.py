@@ -52,8 +52,13 @@ class Controller():
             self.opponent = event.payload[(self.own_index+1)%2]["return_url"]
             self.state = "Game"
             self.over = False
+            self.last_confirmed = 0
             self.event_manager.Post(ReadBoardEvent())
             self.event_manager.Post(ChangeViewEvent("Game"))
+
+        if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.last_confirmed != len(self.history):
+            self.event_manager.post(event) # Bump to back of queue; can't tell if board is in winning state
+            return
 
         if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.own_index == len(self.history) % 2 and [event.x, event.y] not in self.history and self.over == False:
             self.history.append([event.x, event.y])
@@ -71,5 +76,12 @@ class Controller():
                         other = model.Ruutu.NOUGHT
                     self.event_manager.Post(UpdateBoardEvent(move[0], move[1], other))
 
-        if isinstance(event, BoardStateEvent) and self.state == "Game" and event.winning_rows != []:
-            self.over = True
+        if isinstance(event, BoardStateEvent) and self.state == "Game":
+            if event.winning_rows != []:
+                self.over = True
+            qty = 0
+            for y in range(3):
+                for x in range(3):
+                    if event.payload[y][x] != model.Ruutu.EMPTY:
+                        qty += 1
+            self.last_confirmed = qty
