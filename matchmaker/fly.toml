@@ -1,6 +1,6 @@
-# fly.toml file generated for spring-haze-2428 on 2022-12-14T22:41:01+02:00
+# fly.toml file generated for green-pond-7496 on 2022-12-14T23:15:58+02:00
 
-app = "spring-haze-2428"
+app = "green-pond-7496"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []

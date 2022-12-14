@@ -13,6 +13,7 @@ const app: Express = express();
 const port = process.env.PORT;
 app.use(cors())
 app.set('trust proxy', true)
+app.use(express.json())
 
 interface player {
     name: string,
@@ -29,7 +30,8 @@ interface opponentMessage {
     ]
 }
 
-app.get('/queue', async (req: Request, res: Response) => {
+app.post('/queue', async (req: Request, res: Response) => {
+    console.log(req.body)
     //const dbSpec = await connectToDatabase()
     if (playerQueue.find(p => p.id = req.body.id)) {
         res.send("player already in queue");
@@ -40,38 +42,46 @@ app.get('/queue', async (req: Request, res: Response) => {
             ip: `http://${req.ip}:8080`
         }
         playerQueue.push(newPlayer)
-        res.send(200);
+        res.sendStatus(200);
+        if (playerQueue.length > 1) {
+            await matchOn()
+        }
     }
 });
 
-setInterval(() => {
-    if (playerQueue.length > 1) {
-        const player1 = playerQueue.pop()
-        const player2 = playerQueue.pop()
+const matchOn = async () => {
+    const player1 = playerQueue.pop()
+    const player2 = playerQueue.pop()
 
-        const player1Message: opponentMessage = {
-            opponents: [{
-                name: player2!.name,
-                url: player2!.ip
-            }]
-        }
-        const player2Message: opponentMessage =
-        {
-            opponents: [{
-                name: player1!.name,
-                url: player1!.ip
-            }]
-        }
-        sendData(player1!, player1Message)
-        sendData(player2!, player2Message)
+    const player1Message: opponentMessage = {
+        opponents: [{
+            name: player2!.name,
+            url: player2!.ip
+        }]
     }
-}, 5000);
+    const player2Message: opponentMessage =
+    {
+        opponents: [{
+            name: player1!.name,
+            url: player1!.ip
+        }]
+    }
+    sendData(player1!, player1Message)
+    sendData(player2!, player2Message)
+}
+
+setInterval(async () => {
+    console.log(playerQueue)
+    if (playerQueue.length > 1) {
+        await matchOn()
+    }
+}, 1000);
 
 const sendData = async (player: player, opponentMessage: opponentMessage) => {
     try {
+        console.log(player, opponentMessage)
         const response = await axios.post(player.ip, opponentMessage)
-        const data = response.data
-        console.log(data)
+        console.log(response.data)
     } catch (error) {
         console.log(error)
     }
