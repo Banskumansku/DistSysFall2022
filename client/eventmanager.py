@@ -2,7 +2,6 @@ from queue import Queue
 import threading
 
 # coordinates messages
-# some of the code is still copy paste from a tutorial
 
 class Event(object):
     """
@@ -17,34 +16,28 @@ class Event(object):
         return self.name
 
 
+# Stops the server
+
 class QuitEvent(Event):
 
     def __init__(self):
         self.name = "Quit event"
 
-
-class InputEvent(Event):
-    """
-    Input event (keyboard/mouse).
-    """
-
-    def __init__(self, unicodechar, clickpos):
-        self.name = "Input event"
-        self.char = unicodechar
-        self.clickpos = clickpos
-
-    def __str__(self):
-        return '%s, char=%s, clickpos=%s' % (self.name, self.char, self.clickpos)
+# Unregister listener
 
 class RemoveListenerEvent(Event):
     def __init__(self, listener):
         self.name = "Remove listener event"
         self.listener = listener
 
+# Register listener
+
 class AddListenerEvent(Event):
     def __init__(self, listener):
         self.name = "Add listener event"
         self.listener = listener
+
+# Send http request out
 
 class BroadcastEvent(Event):
     def __init__(self, target, payload):
@@ -52,24 +45,34 @@ class BroadcastEvent(Event):
         self.target = target
         self.payload = payload
 
+# Get an incoming request or a response to an outcoming one
+
 class ReplyEvent(Event):
     def __init__(self, target, payload):
         self.name = "Reply event"
         self.target = target
         self.payload = payload
 
+# Ask to change the view
+
 class ChangeViewEvent(Event):
     def __init__(self, view):
         self.name = "ChangeView event"
         self.view = view
 
+# Ask the controller to communicate with the broadcaster to get on the queue
+
 class RequestQueueEvent(Event):
     def __init__(self):
         self.name = "RequestQueue event"
 
+# Ask the model to tell us the state of the board
+
 class ReadBoardEvent(Event):
     def __init__(self):
         self.name = "ReadBoard event"
+
+# Ask the model to update the state of the board
 
 class UpdateBoardEvent(Event):
     def __init__(self, x, y, payload):
@@ -78,11 +81,15 @@ class UpdateBoardEvent(Event):
         self.payload = payload
         self.name = "UpdateBoard event"
 
+# The model tells us the state of the board
+
 class BoardStateEvent(Event):
     def __init__(self, payload, winning_rows):
         self.payload = payload
         self.winning_rows = winning_rows
         self.name = "BoardState event"
+
+# The player has clicked the board
 
 class BoardClickedEvent(Event):
     def __init__(self, x, y):
@@ -90,9 +97,13 @@ class BoardClickedEvent(Event):
         self.y = y
         self.name = "BoardClicked event"
 
+# Ask the controller to communicate with the view manager to go to the main view
+
 class ResetViewEvent(Event):
     def __init__(self):
         self.name = "ResetView event"
+
+# Ask the model to reset the board
 
 class ResetBoardEvent(Event):
     def __init__(self):
@@ -121,7 +132,6 @@ class EventManager(object):
         """ 
         Remove a listener from our spam list.
         This is implemented but hardly used.
-        Our weak ref spam list will auto remove any listeners who stop existing.
         """
 
         self.queue.put(RemoveListenerEvent(listener))
@@ -153,5 +163,3 @@ class EventManager(object):
 
         t = threading.Thread(target=subfunction)
         t.start()
-
-        self.Post("E: Started event manager")
