@@ -12,13 +12,9 @@ class Button:
     def __init__(self, text,  pos, font):
         self.x, self.y = pos
         self.font = pygame.font.SysFont("Sans", font)
-        if feedback == "":
-            self.feedback = "text"
-        else:
-            self.feedback = feedback
-        self.change_text(text, white)
+        self.change_text(text, "white")
  
-    def change_text(self, text):
+    def change_text(self, text, bg):
 
         # Render the text of the button
 
