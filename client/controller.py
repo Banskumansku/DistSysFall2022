@@ -1,6 +1,6 @@
 # contains game logic and handles messages with event manager
 
-from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent, ReadBoardEvent, BoardClickedEvent, UpdateBoardEvent
+from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent, ReadBoardEvent, BoardClickedEvent, UpdateBoardEvent, BoardStateEvent
 import json
 import model
 from random import choice
@@ -10,6 +10,7 @@ class Controller():
         self.player = None
         self.history = None
         self.opponent = None
+        self.over = False
         self.context = context
         self.state = "Main"
 
@@ -50,16 +51,17 @@ class Controller():
                 self.own_index = 1
             self.opponent = event.payload[(self.own_index+1)%2]["return_url"]
             self.state = "Game"
+            self.over = False
             self.event_manager.Post(ReadBoardEvent())
             self.event_manager.Post(ChangeViewEvent("Game"))
 
-        if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.own_index == len(self.history) % 2 and [event.x, event.y] not in self.history:
+        if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.own_index == len(self.history) % 2 and [event.x, event.y] not in self.history and self.over == False:
             self.history.append([event.x, event.y])
             self.event_manager.Post(UpdateBoardEvent(event.x, event.y, self.player))
             self.event_manager.Post(BroadcastEvent(self.opponent+"/make-move", json.dumps(self.history)))
 
         
-        if isinstance(event, ReplyEvent) and event.target.split("/")[-1] == "make-move" and self.state == "Game":
+        if isinstance(event, ReplyEvent) and event.target.split("/")[-1] == "make-move" and self.state == "Game" and self.over == False:
             if len(event.payload) == len(self.history)+1:
                 move = event.payload[-1]
                 if event.payload[:-1] == self.history and move not in self.history:
@@ -68,3 +70,6 @@ class Controller():
                     if self.player == model.Ruutu.CROSS:
                         other = model.Ruutu.NOUGHT
                     self.event_manager.Post(UpdateBoardEvent(move[0], move[1], other))
+
+        if isinstance(event, BoardStateEvent) and self.state == "Game" and event.winning_rows != []:
+            self.over = True

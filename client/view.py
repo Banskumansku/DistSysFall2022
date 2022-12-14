@@ -15,7 +15,7 @@ class MainView():
             (100, 100),
             16)
 
-    def draw(self, screen, board):
+    def draw(self, screen, board, winning_rows):
         screen.fill((0, 0, 0))  # Fill the screen with black.
 
         # Redraw screen here
@@ -32,7 +32,7 @@ class MainView():
 
 
 class WaitView():
-    def draw(self, screen, board):
+    def draw(self, screen, board, winning_rows):
         screen.fill((255, 0, 0))  # Fill the screen with red.
 
         # Redraw screen here.
@@ -48,7 +48,7 @@ class WaitView():
 
 
 class GameView():
-    def draw(self, screen, board):
+    def draw(self, screen, board, winning_rows):
         screen.fill((0, 0, 0))  # Fill the screen with green.
 
         # Redraw screen here.
@@ -69,6 +69,9 @@ class GameView():
                     pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+20), (10 + 100*x+80, 10+100*y+80))
                     pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+80), (10 + 100*x+80, 10+100*y+20))
 
+        for a, b in winning_rows:
+            pygame.draw.line(screen, (255, 255, 255), (10 + 100*a[0]+50, 10 + 100*a[1]+50), (10 + 100*b[0]+50, 10 + 100*b[1]+50))
+
         # Flip the display so that the things we drew actually show up.
         pygame.display.flip()
         pygame.display.set_caption('Game view')
@@ -85,7 +88,7 @@ class GameView():
             return []
 
 class GameEndView():
-    def draw(screen, board):
+    def draw(screen, board, winning_rows):
         screen.fill((0, 0, 255))  # Fill the screen with blue.
 
         # Redraw screen here.
@@ -106,6 +109,7 @@ class ViewManager():
                       'Game': None,
                       'GameEnd': None}
         self.board = None
+        self.winning_rows = []
         self.view = "Main"
 
     def init_views(self):
@@ -126,6 +130,7 @@ class ViewManager():
 
         if isinstance(event, BoardStateEvent):
             self.board = event.payload
+            self.winning_rows = event.winning_rows
 
     def main_game(self):
 
@@ -147,7 +152,7 @@ class ViewManager():
 
             # Redraw every frame even if no event was incoming
 
-            self.views[self.view].draw(screen, self.board)
+            self.views[self.view].draw(screen, self.board, self.winning_rows)
             dt = fpsClock.tick(fps)
 
             for event in pygame.event.get():

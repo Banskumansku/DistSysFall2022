@@ -79,8 +79,9 @@ class UpdateBoardEvent():
         self.name = "UpdateBoard event"
 
 class BoardStateEvent():
-    def __init__(self, payload):
+    def __init__(self, payload, winning_rows):
         self.payload = payload
+        self.winning_rows = winning_rows
         self.name = "BoardState event"
 
 class BoardClickedEvent():

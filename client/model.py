@@ -61,11 +61,36 @@ class Model():
         self.event_manager = event_manager
         self.event_manager.RegisterListener(self)
 
+    def winning_rows(self):
+        result = []
+
+        for hline in range(3):
+            k = self.grid[hline][0]
+            if k == Ruutu.EMPTY:
+                continue
+            if k == self.grid[hline][1] and k == self.grid[hline][2]:
+                result.append([[0, hline], [2, hline]])
+
+        for vline in range(3):
+            k = self.grid[0][vline]
+            if k == Ruutu.EMPTY:
+                continue
+            if k == self.grid[1][vline] and k == self.grid[2][vline]:
+                result.append([[vline, 0], [vline, 2]])
+
+        if self.grid[0][0] != Ruutu.EMPTY and self.grid[0][0] == self.grid[1][1] and self.grid[0][0] == self.grid[2][2]:
+            result.append([[0, 0], [2, 2]])
+
+        if self.grid[2][0] != Ruutu.EMPTY and self.grid[2][0] == self.grid[1][1] and self.grid[2][0] == self.grid[0][2]:
+            result.append([[2, 0], [0, 2]])
+
+        return result
+
     def notify(self, event):
         
         if isinstance(event, ReadBoardEvent):
-            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid)))
+            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid), self.winning_rows()))
         
         if isinstance(event, UpdateBoardEvent):
             self.grid[event.y][event.x] = event.payload
-            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid)))
+            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid), self.winning_rows()))
