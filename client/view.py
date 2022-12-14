@@ -9,6 +9,8 @@ import time
 
 class MainView():
 
+    # The landing view of the game
+
     def __init__(self):
         self.button1 = model.Button(
             "Start a new game",
@@ -26,12 +28,18 @@ class MainView():
         pygame.display.set_caption('Welcome to the game')
         pass
 
+    # Converts pygame events into event manager events
+
     def handle_event(self, event, board):
+        # 1026 = mouse released
         if event.type == 1026 and self.button1.is_within_bounds(event.pos[0], event.pos[1]):
             return [RequestQueueEvent()]
 
 
 class WaitView():
+
+    # View while waiting on matchmaker
+
     def draw(self, screen, board, winning_rows):
         screen.fill((255, 0, 0))  # Fill the screen with red.
 
@@ -43,13 +51,18 @@ class WaitView():
         # draw your animation
         pass
 
+    # No pygame events matter here
+
     def handle_event(self, event, board):
         pass
 
 
 class GameView():
+
+    # View where the actual game is played
+
     def draw(self, screen, board, winning_rows):
-        screen.fill((0, 0, 0))  # Fill the screen with green.
+        screen.fill((0, 0, 0)) # Fill the screen with black.
 
         # Redraw screen here.
 
@@ -76,20 +89,23 @@ class GameView():
         pygame.display.flip()
         pygame.display.set_caption('Game view')
 
-        # draw your animation
-        pass
-
     def handle_event(self, event, board):
+
+        # 1026 = mouse released
+
         if event.type == 1026:
+
+            # Determine which square this falls in
+
             x = (event.pos[0] - 10) // 100
             y = (event.pos[1] - 10) // 100
             if x in range(3) and y in range(3):
-                return [BoardClickedEvent(x, y)]
+                return [BoardClickedEvent(x, y)] # If it's a relevant one, inform rest of world
             return []
 
 class GameEndView():
     def draw(self, screen, board, winning_rows):
-        screen.fill((0, 0, 255))  # Fill the screen with blue.
+        screen.fill((0, 0, 255)) # Fill the screen with blue.
 
         # Redraw screen here.
 
@@ -118,12 +134,17 @@ class GameEndView():
         pass
 
     def handle_event(self, event, board):
+        # 1026 = mouse released
         if event.type == 1026:
             return [ResetViewEvent()]
         else:
             return []
 
+# Coordinates transitions between views and holds enough board state for drawing
+
 class ViewManager():
+
+    # Weird two-step init, because pygame isn't set up at __init__-time
 
     def __init__(self):
         self.views = {'Main': None,
@@ -140,21 +161,28 @@ class ViewManager():
                       'Game': GameView(),
                       'GameEnd': GameEndView()}
 
+    # Register to event manager and keep a handle to it
+
     def set_event_manager(self, event_manager):
         self.event_manager = event_manager
         self.event_manager.RegisterListener(self)
 
     def notify(self, event):
+
+        # Change views upon request
+
         if isinstance(event, ChangeViewEvent):
             self.view = event.view
 
-        # Always accept board state events
+        # Update according to board state events
 
         if isinstance(event, BoardStateEvent):
             self.board = event.payload
             self.winning_rows = event.winning_rows
 
     def main_game(self):
+
+        # --- pygame setup ---
 
         clock = pygame.time.Clock()
 
@@ -166,7 +194,13 @@ class ViewManager():
 
         pygame.init()
 
+        # --------------------
+
+        # Initialize the views
+
         self.init_views()
+
+        # Main game loop
 
         dt = 1/fps
         ending = False
@@ -175,7 +209,10 @@ class ViewManager():
             # Redraw every frame even if no event was incoming
 
             self.views[self.view].draw(screen, self.board, self.winning_rows)
-            dt = fpsClock.tick(fps)
+
+            dt = fpsClock.tick(fps) # Wait for fps clock
+
+            # Handle pygame events
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
