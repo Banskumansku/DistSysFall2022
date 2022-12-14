@@ -1,6 +1,6 @@
 import pygame
 import model
-from eventmanager import EventManager, ChangeViewEvent, RequestQueueEvent, BoardStateEvent, UpdateBoardEvent, BoardClickedEvent
+from eventmanager import EventManager, ChangeViewEvent, RequestQueueEvent, BoardStateEvent, UpdateBoardEvent, BoardClickedEvent, ResetViewEvent, ResetBoardEvent
 from broadcast import Broadcaster
 import time
 
@@ -88,10 +88,29 @@ class GameView():
             return []
 
 class GameEndView():
-    def draw(screen, board, winning_rows):
+    def draw(self, screen, board, winning_rows):
         screen.fill((0, 0, 255))  # Fill the screen with blue.
 
         # Redraw screen here.
+
+        for hline in range(1, 3):
+            pygame.draw.line(screen, (255, 255, 255), (10 + hline*100, 10), (10+hline*100, 310))
+
+        for vline in range(1, 3):
+            pygame.draw.line(screen, (255, 255, 255), (10, 10 + vline*100), (310, 10 + vline*100))
+
+        for y in range(3):
+            for x in range(3):
+                if board[y][x] == model.Ruutu.EMPTY:
+                    pygame.draw.line(screen, (255, 255, 255), (10 + 100*x+30, 60+100*y), (10 + 100*x+70, 60+100*y))
+                if board[y][x] == model.Ruutu.NOUGHT:
+                    pygame.draw.circle(screen, (0, 255, 255), (10 + 100*x+50, 10+100*y+50), 30, 1)
+                if board[y][x] == model.Ruutu.CROSS:
+                    pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+20), (10 + 100*x+80, 10+100*y+80))
+                    pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+80), (10 + 100*x+80, 10+100*y+20))
+
+        for a, b in winning_rows:
+            pygame.draw.line(screen, (255, 255, 255), (10 + 100*a[0]+50, 10 + 100*a[1]+50), (10 + 100*b[0]+50, 10 + 100*b[1]+50))
 
         # Flip the display so that the things we drew actually show up.
         pygame.display.flip()
@@ -99,7 +118,10 @@ class GameEndView():
         pass
 
     def handle_event(self, event, board):
-        pass
+        if event.type == 1026:
+            return [ResetViewEvent()]
+        else:
+            return []
 
 class ViewManager():
 

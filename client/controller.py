@@ -1,6 +1,6 @@
 # contains game logic and handles messages with event manager
 
-from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent, ReadBoardEvent, BoardClickedEvent, UpdateBoardEvent, BoardStateEvent
+from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent, ReadBoardEvent, BoardClickedEvent, UpdateBoardEvent, BoardStateEvent, ResetViewEvent, ResetBoardEvent
 import json
 import model
 from random import choice
@@ -53,6 +53,7 @@ class Controller():
             self.state = "Game"
             self.over = False
             self.last_confirmed = 0
+            self.event_manager.Post(ResetBoardEvent())
             self.event_manager.Post(ReadBoardEvent())
             self.event_manager.Post(ChangeViewEvent("Game"))
 
@@ -77,11 +78,18 @@ class Controller():
                     self.event_manager.Post(UpdateBoardEvent(move[0], move[1], other))
 
         if isinstance(event, BoardStateEvent) and self.state == "Game":
-            if event.winning_rows != []:
-                self.over = True
             qty = 0
             for y in range(3):
                 for x in range(3):
                     if event.payload[y][x] != model.Ruutu.EMPTY:
                         qty += 1
             self.last_confirmed = qty
+            if event.winning_rows != [] or qty == 9:
+                self.over = True
+            if self.over:
+                self.event_manager.Post(ChangeViewEvent("GameEnd"))
+                self.state = "GameEnd"
+
+        if isinstance(event, ResetViewEvent) and self.state == "GameEnd":
+            self.event_manager.Post(ChangeViewEvent("Main"))
+            self.state = "Main"

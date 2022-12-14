@@ -63,32 +63,40 @@ class ChangeViewEvent(Event):
         self.name = "ChangeView event"
         self.view = view
 
-class RequestQueueEvent():
+class RequestQueueEvent(Event):
     def __init__(self):
         self.name = "RequestQueue event"
 
-class ReadBoardEvent():
+class ReadBoardEvent(Event):
     def __init__(self):
         self.name = "ReadBoard event"
 
-class UpdateBoardEvent():
+class UpdateBoardEvent(Event):
     def __init__(self, x, y, payload):
         self.x = x
         self.y = y
         self.payload = payload
         self.name = "UpdateBoard event"
 
-class BoardStateEvent():
+class BoardStateEvent(Event):
     def __init__(self, payload, winning_rows):
         self.payload = payload
         self.winning_rows = winning_rows
         self.name = "BoardState event"
 
-class BoardClickedEvent():
+class BoardClickedEvent(Event):
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.name = "BoardClicked event"
+
+class ResetViewEvent(Event):
+    def __init__(self):
+        self.name = "ResetView event"
+
+class ResetBoardEvent(Event):
+    def __init__(self):
+        self.name = "Board event"
 
 class EventManager(object):
     """

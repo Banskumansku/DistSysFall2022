@@ -3,7 +3,7 @@ import pygame
 
 import copy
 
-from eventmanager import EventManager, ReadBoardEvent, UpdateBoardEvent, BoardStateEvent
+from eventmanager import EventManager, ReadBoardEvent, UpdateBoardEvent, BoardStateEvent, ResetBoardEvent
 
 from enum import Enum
 
@@ -49,6 +49,9 @@ class Ruutu(Enum):
 class Model():
 
     def __init__(self):
+        self.reset_state()
+
+    def reset_state(self):
         self.grid = []
         self.players = []
         for y in range(3):
@@ -93,4 +96,7 @@ class Model():
         
         if isinstance(event, UpdateBoardEvent):
             self.grid[event.y][event.x] = event.payload
+            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid), self.winning_rows()))
+        if isinstance(event, ResetBoardEvent):
+            self.reset_state()
             self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid), self.winning_rows()))
