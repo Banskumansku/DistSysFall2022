@@ -1,6 +1,12 @@
 # keeps track of game state
 import pygame
 
+import copy
+
+from eventmanager import EventManager, ReadBoardEvent, UpdateBoardEvent, BoardStateEvent
+
+from enum import Enum
+
 class Player():
     pass
 
@@ -35,26 +41,31 @@ class Button:
             return False
         return True
 
-class Grid():
-    pass
-
-class Ruutu():
-    pass
+class Ruutu(Enum):
+    EMPTY = 0
+    NOUGHT = 1
+    CROSS = 2
 
 class Model():
 
     def __init__(self):
-        self.grid = Grid()
+        self.grid = []
         self.players = []
+        for y in range(3):
+            row = []
+            for x in range(3):
+                row.append(Ruutu.EMPTY)
+            self.grid.append(row)
 
-    def update(event):
-        pass
+    def set_event_manager(self, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.RegisterListener(self)
 
-    def lock():
-        pass
-
-    def unlock():
-        pass
-
-    def read(index):
-        pass
+    def notify(self, event):
+        
+        if isinstance(event, ReadBoardEvent):
+            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid)))
+        
+        if isinstance(event, UpdateBoardEvent):
+            self.grid[event.y][event.x] = event.payload
+            self.event_manager.Post(BoardStateEvent(copy.deepcopy(self.grid)))

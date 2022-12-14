@@ -66,7 +66,28 @@ class ChangeViewEvent(Event):
 class RequestQueueEvent():
     def __init__(self):
         self.name = "RequestQueue event"
-        pass
+
+class ReadBoardEvent():
+    def __init__(self):
+        self.name = "ReadBoard event"
+
+class UpdateBoardEvent():
+    def __init__(self, x, y, payload):
+        self.x = x
+        self.y = y
+        self.payload = payload
+        self.name = "UpdateBoard event"
+
+class BoardStateEvent():
+    def __init__(self, payload):
+        self.payload = payload
+        self.name = "BoardState event"
+
+class BoardClickedEvent():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.name = "BoardClicked event"
 
 class EventManager(object):
     """

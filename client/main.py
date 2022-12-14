@@ -3,6 +3,7 @@ from eventmanager import EventManager
 from broadcast import Broadcaster
 from controller import Controller
 from server import Server
+from model import Model
 
 import sys
 
@@ -23,6 +24,9 @@ b.set_event_manager(e)
 
 v = ViewManager()
 v.set_event_manager(e)
+
+m = Model()
+m.set_event_manager(e)
 
 s = Server()
 s.set_event_manager(e)

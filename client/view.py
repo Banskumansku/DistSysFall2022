@@ -1,6 +1,6 @@
 import pygame
 import model
-from eventmanager import EventManager, ChangeViewEvent, RequestQueueEvent
+from eventmanager import EventManager, ChangeViewEvent, RequestQueueEvent, BoardStateEvent, UpdateBoardEvent, BoardClickedEvent
 from broadcast import Broadcaster
 import time
 
@@ -15,7 +15,7 @@ class MainView():
             (100, 100),
             16)
 
-    def draw(self, screen):
+    def draw(self, screen, board):
         screen.fill((0, 0, 0))  # Fill the screen with black.
 
         # Redraw screen here
@@ -26,13 +26,13 @@ class MainView():
         pygame.display.set_caption('Welcome to the game')
         pass
 
-    def handle_event(self, event):
+    def handle_event(self, event, board):
         if event.type == 1026 and self.button1.is_within_bounds(event.pos[0], event.pos[1]):
             return [RequestQueueEvent()]
 
 
 class WaitView():
-    def draw(self, screen):
+    def draw(self, screen, board):
         screen.fill((255, 0, 0))  # Fill the screen with red.
 
         # Redraw screen here.
@@ -43,27 +43,49 @@ class WaitView():
         # draw your animation
         pass
 
-    def handle_event(self, event):
+    def handle_event(self, event, board):
         pass
 
 
 class GameView():
-    def draw(self, screen):
-        screen.fill((0, 255, 0))  # Fill the screen with green.
+    def draw(self, screen, board):
+        screen.fill((0, 0, 0))  # Fill the screen with green.
 
         # Redraw screen here.
+
+        for hline in range(1, 3):
+            pygame.draw.line(screen, (255, 255, 255), (10 + hline*100, 10), (10+hline*100, 310))
+
+        for vline in range(1, 3):
+            pygame.draw.line(screen, (255, 255, 255), (10, 10 + vline*100), (310, 10 + vline*100))
+
+        for y in range(3):
+            for x in range(3):
+                if board[y][x] == model.Ruutu.EMPTY:
+                    pygame.draw.line(screen, (255, 255, 255), (10 + 100*x+30, 60+100*y), (10 + 100*x+70, 60+100*y))
+                if board[y][x] == model.Ruutu.NOUGHT:
+                    pygame.draw.circle(screen, (0, 255, 255), (10 + 100*x+50, 10+100*y+50), 30, 1)
+                if board[y][x] == model.Ruutu.CROSS:
+                    pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+20), (10 + 100*x+80, 10+100*y+80))
+                    pygame.draw.line(screen, (255, 0, 255), (10 + 100*x+20, 10+100*y+80), (10 + 100*x+80, 10+100*y+20))
 
         # Flip the display so that the things we drew actually show up.
         pygame.display.flip()
         pygame.display.set_caption('Game view')
+
         # draw your animation
         pass
 
-    def handle_event(self, event):
-        pass
+    def handle_event(self, event, board):
+        if event.type == 1026:
+            x = (event.pos[0] - 10) // 100
+            y = (event.pos[1] - 10) // 100
+            if x in range(3) and y in range(3):
+                return [BoardClickedEvent(x, y)]
+            return []
 
 class GameEndView():
-    def draw(screen):
+    def draw(screen, board):
         screen.fill((0, 0, 255))  # Fill the screen with blue.
 
         # Redraw screen here.
@@ -73,7 +95,7 @@ class GameEndView():
         pygame.display.set_caption('Game over')
         pass
 
-    def handle_event(self, event):
+    def handle_event(self, event, board):
         pass
 
 class ViewManager():
@@ -83,6 +105,7 @@ class ViewManager():
                       'Wait': None,
                       'Game': None,
                       'GameEnd': None}
+        self.board = None
         self.view = "Main"
 
     def init_views(self):
@@ -98,6 +121,11 @@ class ViewManager():
     def notify(self, event):
         if isinstance(event, ChangeViewEvent):
             self.view = event.view
+
+        # Always accept board state events
+
+        if isinstance(event, BoardStateEvent):
+            self.board = event.payload
 
     def main_game(self):
 
@@ -119,7 +147,7 @@ class ViewManager():
 
             # Redraw every frame even if no event was incoming
 
-            self.views[self.view].draw(screen)
+            self.views[self.view].draw(screen, self.board)
             dt = fpsClock.tick(fps)
 
             for event in pygame.event.get():
@@ -129,7 +157,7 @@ class ViewManager():
                 # Handle pygame event
                 # Potentially move event to event manager
 
-                result = self.views[self.view].handle_event(event)
+                result = self.views[self.view].handle_event(event, self.board)
                 if result != None:
                     for event in result:
                         self.event_manager.Post(event)

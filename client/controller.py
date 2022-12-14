@@ -1,10 +1,14 @@
 # contains game logic and handles messages with event manager
 
-from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent
+from eventmanager import ReplyEvent, ChangeViewEvent, RequestQueueEvent, BroadcastEvent, ReadBoardEvent, BoardClickedEvent, UpdateBoardEvent
 import json
+import model
+from random import choice
 
 class Controller():
     def __init__(self, context):
+        self.player = None
+        self.turn = None
         self.context = context
         self.state = "Main"
 
@@ -36,5 +40,14 @@ class Controller():
 
         if isinstance(event, ReplyEvent) and event.target.split("/")[-1] == "matchmaking-success" and self.state == "Wait":
             print(f"Start game with players {event.payload}")
+            self.turn = model.Ruutu.CROSS
+            if self.context["RETURN_ADDRESS"] == event.payload[0]["return_url"]:
+                self.player = model.Ruutu.CROSS
+            else:
+                self.player = model.Ruutu.NOUGHT
             self.state = "Game"
+            self.event_manager.Post(ReadBoardEvent())
             self.event_manager.Post(ChangeViewEvent("Game"))
+
+        if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.player == self.turn:
+            self.event_manager.Post(UpdateBoardEvent(event.x, event.y, self.player))
