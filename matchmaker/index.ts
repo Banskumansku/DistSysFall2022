@@ -18,7 +18,8 @@ app.use(express.json())
 interface player {
     name: string,
     id: string,
-    return_url: string
+    return_url: string,
+    timestamp: number
 }
 
 interface opponent {
@@ -38,7 +39,8 @@ app.post('/queue', async (req: Request, res: Response) => {
         const newPlayer = {
             name: req.body.name,
             id: req.body.id,
-            return_url: req.body.return_url
+            return_url: req.body.return_url,
+            timestamp: new Date().getTime()
         }
         playerQueue.push(newPlayer)
         res.sendStatus(200);
@@ -81,6 +83,14 @@ setInterval(async () => {
         await matchOn()
     }
 }, 5000);
+
+setInterval(async () => {
+    const time = new Date().getTime()
+    if (time - playerQueue[0].timestamp >= 1000 * 90) {
+        console.log("Player has spent 90 seconds in the queue, dropping from queue")
+        console.log(playerQueue.pop())
+    }
+}, 1000);
 
 const sendData = async (player: player, opponentMessage: opponentMessage) => {
     try {
