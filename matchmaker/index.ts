@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './src/db/service';
 import { playerRouter } from './src/db/players';
 import axios from 'axios';
+import bodyParser from 'body-parser';
 const cors = require('cors')
 
 dotenv.config();
@@ -13,7 +14,8 @@ const app: Express = express();
 const port = process.env.PORT;
 app.use(cors())
 app.set('trust proxy', true)
-app.use(express.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 interface player {
     name: string,
@@ -31,19 +33,20 @@ interface opponentMessage {
     opponents: opponent[]
 }
 
-app.post('/queue', async (req: Request, res: Response) => {
-    console.log(req.body)
-    if (playerQueue.find(p => p.id = req.body.id)) {
+app.post('/request-match', async (req: any, res: Response) => {
+    //console.log(JSON.parse(Object.keys(req.body)[0]))
+    const body = JSON.parse(Object.keys(req.body)[0])
+    if (playerQueue.find(p => p.id = body.id)) {
         res.send("player already in queue");
     } else {
         const newPlayer = {
-            name: req.body.name,
-            id: req.body.id,
-            return_url: req.body.return_url,
+            name: body.name,
+            id: body.id,
+            return_url: body.return_url,
             timestamp: new Date().getTime()
         }
         playerQueue.push(newPlayer)
-        res.sendStatus(200);
+        res.send({ "status": "success" });
         if (playerQueue.length > 1) {
             await matchOn()
         }
