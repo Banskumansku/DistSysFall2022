@@ -85,10 +85,12 @@ setInterval(async () => {
 }, 5000);
 
 setInterval(async () => {
-    const time = new Date().getTime()
-    if (time - playerQueue[0].timestamp >= 1000 * 90) {
-        console.log("Player has spent 90 seconds in the queue, dropping from queue")
-        console.log(playerQueue.pop())
+    if (playerQueue.length > 0) {
+        const time = new Date().getTime()
+        if (time - playerQueue[0].timestamp >= 1000 * 90) {
+            console.log("Player has spent 90 seconds in the queue, dropping from queue")
+            console.log(playerQueue.pop())
+        }
     }
 }, 1000);
 
