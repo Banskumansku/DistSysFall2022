@@ -32,7 +32,6 @@ interface opponentMessage {
 
 app.post('/queue', async (req: Request, res: Response) => {
     console.log(req.body)
-    //const dbSpec = await connectToDatabase()
     if (playerQueue.find(p => p.id = req.body.id)) {
         res.send("player already in queue");
     } else {
@@ -81,7 +80,7 @@ setInterval(async () => {
     if (playerQueue.length > 1) {
         await matchOn()
     }
-}, 1000);
+}, 5000);
 
 const sendData = async (player: player, opponentMessage: opponentMessage) => {
     try {
