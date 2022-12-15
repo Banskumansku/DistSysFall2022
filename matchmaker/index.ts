@@ -18,16 +18,16 @@ app.use(express.json())
 interface player {
     name: string,
     id: string,
-    ip: string
+    return_url: string
+}
+
+interface opponent {
+    name: string,
+    url: string
 }
 
 interface opponentMessage {
-    opponents: [
-        {
-            name: string,
-            url: string
-        }
-    ]
+    opponents: opponent[]
 }
 
 app.post('/queue', async (req: Request, res: Response) => {
@@ -39,7 +39,7 @@ app.post('/queue', async (req: Request, res: Response) => {
         const newPlayer = {
             name: req.body.name,
             id: req.body.id,
-            ip: `http://${req.ip}:8080`
+            return_url: req.body.return_url
         }
         playerQueue.push(newPlayer)
         res.sendStatus(200);
@@ -55,15 +55,21 @@ const matchOn = async () => {
 
     const player1Message: opponentMessage = {
         opponents: [{
+            name: player1!.name,
+            url: player1!.return_url
+        }, {
             name: player2!.name,
-            url: player2!.ip
+            url: player2!.return_url
         }]
     }
     const player2Message: opponentMessage =
     {
         opponents: [{
             name: player1!.name,
-            url: player1!.ip
+            url: player1!.return_url
+        }, {
+            name: player2!.name,
+            url: player2!.return_url
         }]
     }
     sendData(player1!, player1Message)
@@ -80,7 +86,7 @@ setInterval(async () => {
 const sendData = async (player: player, opponentMessage: opponentMessage) => {
     try {
         console.log(player, opponentMessage)
-        const response = await axios.post(player.ip, opponentMessage)
+        const response = await axios.post(`${player.return_url}/matchmaking-success`, opponentMessage)
         console.log(response.data)
     } catch (error) {
         console.log(error)
