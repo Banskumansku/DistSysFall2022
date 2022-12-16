@@ -78,7 +78,7 @@ const matchOn = async () => {
 }
 
 setInterval(async () => {
-    playerQueue.length > 0 ?? console.log(playerQueue)
+    console.log(playerQueue)
     if (playerQueue.length > 1) {
         await matchOn()
     }
