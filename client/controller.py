@@ -53,12 +53,12 @@ class Controller():
 
             self.history = []
             self.own_index = 0
-            if self.context["RETURN_ADDRESS"] == event.payload[0]["return_url"]:
+            if self.context["RETURN_ADDRESS"] == event.payload[0]["url"]:
                 self.player = model.Ruutu.CROSS
             else:
                 self.player = model.Ruutu.NOUGHT
                 self.own_index = 1
-            self.opponent = event.payload[(self.own_index+1)%2]["return_url"]
+            self.opponent = event.payload[(self.own_index+1)%2]["url"]
             self.state = "Game"
             self.over = False
             self.last_confirmed = 0

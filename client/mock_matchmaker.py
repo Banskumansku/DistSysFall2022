@@ -45,7 +45,7 @@ class MockServer():
 
             data = {"opponents": []}
             for player in match:
-                data["opponents"].append({"name": player["name"], "return_url": player["return_url"]})
+                data["opponents"].append({"name": player["name"], "url": player["return_url"]})
 
             # Broadcast the data to the players
 
