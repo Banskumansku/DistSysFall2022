@@ -38,16 +38,20 @@ playerRouter.get("/:id", async (req: Request, res: Response) => {
 });
 // POST
 
+const addPlayer = async (name: string, loss?: boolean, win?: boolean) => {
+    const newPlayer: Player = {
+        name: name,
+        wins: win ? 1 : 0,
+        losses: loss ? 1 : 0
+    }
+    return await collections.players!.insertOne(newPlayer);
+}
+
 playerRouter.post("/", async (req: Request, res: Response) => {
     try {
         //const newPlayer = { name: "asd", wins: 1, losses: 1 } as Player;
         const playerName: string = req.query.name as string
-        const newPlayer: Player = {
-            name: playerName,
-            wins: 0,
-            losses: 0
-        }
-        const result = await collections.players!.insertOne(newPlayer);
+        const result = await addPlayer(playerName)
 
         result
             ? res.status(201).send(`Successfully created a new player with id ${result.insertedId}`)
@@ -60,42 +64,57 @@ playerRouter.post("/", async (req: Request, res: Response) => {
 
 // PUT
 
-playerRouter.put("/win/:id", async (req: Request, res: Response) => {
-    const id = req?.params?.id;
+playerRouter.post("/win/:name", async (req: Request, res: Response) => {
+    const name = req?.params?.name;
 
     try {
 
-        const query = { _id: new ObjectId(id) };
+        const query = { name: name };
         const oldPlayer = (await collections.players!.findOne(query)) as any;
-        const wins: number = oldPlayer.wins + 1
-        const updated = { ...oldPlayer, wins: wins }
+        if (!oldPlayer) {
+            const result = await addPlayer(name, false, true)
 
-        const result = await collections!.players!.updateOne(query, { $set: updated });
+            result
+                ? res.status(200).send(`Successfully added user with name ${name} and one victory`)
+                : res.status(304).send(`Player with name: ${name} not updated`);
+        } else {
+            const wins: number = oldPlayer.wins + 1
+            const updated = { ...oldPlayer, wins: wins }
 
-        result
-            ? res.status(200).send(`Successfully added win with id ${id}`)
-            : res.status(304).send(`Player with id: ${id} not updated`);
+            const result = await collections!.players!.updateOne(query, { $set: updated });
+
+            result
+                ? res.status(200).send(`Successfully added win with name ${name}`)
+                : res.status(304).send(`Player with name: ${name} not updated`);
+        }
     } catch (error: any) {
         console.error(error.message);
         res.status(400).send(error.message);
     }
 });
 
-playerRouter.put("/loss/:id", async (req: Request, res: Response) => {
-    const id = req?.params?.id;
+playerRouter.post("/loss/:name", async (req: Request, res: Response) => {
+    const name = req?.params?.name;
 
     try {
 
-        const query = { _id: new ObjectId(id) };
+        const query = { name: name };
         const oldPlayer = (await collections.players!.findOne(query)) as any;
-        const losses: number = oldPlayer.losses + 1
-        const updated = { ...oldPlayer, losses: losses }
+        if (!oldPlayer) {
+            const result = await addPlayer(name, true, false)
+            result
+                ? res.status(200).send(`Successfully added user with name ${name} and one loss`)
+                : res.status(304).send(`Player with name: ${name} not updated`);
+        } else {
+            const losses: number = oldPlayer.losses + 1
+            const updated = { ...oldPlayer, losses: losses }
 
-        const result = await collections!.players!.updateOne(query, { $set: updated });
+            const result = await collections!.players!.updateOne(query, { $set: updated });
 
-        result
-            ? res.status(200).send(`Successfully added loss with id ${id}`)
-            : res.status(304).send(`Player with id: ${id} not updated`);
+            result
+                ? res.status(200).send(`Successfully added loss with name ${name}`)
+                : res.status(304).send(`Player with name: ${name} not updated`);
+        }
     } catch (error: any) {
         console.error(error.message);
         res.status(400).send(error.message);

@@ -3,19 +3,18 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './src/db/service';
 import { playerRouter } from './src/db/players';
 import axios from 'axios';
-import bodyParser from 'body-parser';
 const cors = require('cors')
 
 dotenv.config();
 
-const playerQueue: player[] = []
+//If I was to make this again, I would use a Map here for easier checking
+let playerQueue: player[] = []
 
 const app: Express = express();
 const port = process.env.PORT;
 app.use(cors())
 app.set('trust proxy', true)
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.json());
 
 interface player {
     name: string,
@@ -33,24 +32,22 @@ interface opponentMessage {
     opponents: opponent[]
 }
 
-app.post('/request-match', async (req: any, res: Response) => {
-    //console.log(JSON.parse(Object.keys(req.body)[0]))
-    const body = JSON.parse(Object.keys(req.body)[0])
-    if (playerQueue.find(p => p.id = body.id)) {
-        res.send("player already in queue");
-    } else {
-        const newPlayer = {
-            name: body.name,
-            id: body.id,
-            return_url: body.return_url,
-            timestamp: new Date().getTime()
-        }
-        playerQueue.push(newPlayer)
-        res.send({ "status": "success" });
-        if (playerQueue.length > 1) {
-            await matchOn()
-        }
+app.post('/request-match', async (req: Request, res: Response) => {
+    const body = req.body
+    //If player wants to enter the queue again they are removed from the original queue
+    playerQueue = playerQueue.filter(player => player.return_url !== req.body.return_url)
+    const newPlayer = {
+        name: body.name,
+        id: body.id,
+        return_url: body.return_url,
+        timestamp: new Date().getTime()
     }
+    playerQueue.push(newPlayer)
+    res.send({ "status": "success" });
+    if (playerQueue.length > 1) {
+        await matchOn()
+    }
+
 });
 
 const matchOn = async () => {
@@ -81,7 +78,7 @@ const matchOn = async () => {
 }
 
 setInterval(async () => {
-    console.log(playerQueue)
+    playerQueue.length > 0 ?? console.log(playerQueue)
     if (playerQueue.length > 1) {
         await matchOn()
     }
@@ -93,6 +90,7 @@ setInterval(async () => {
         if (time - playerQueue[0].timestamp >= 1000 * 90) {
             console.log("Player has spent 90 seconds in the queue, dropping from queue")
             console.log(playerQueue.pop())
+
         }
     }
 }, 1000);
