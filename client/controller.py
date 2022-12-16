@@ -30,9 +30,9 @@ class Controller():
 
         if isinstance(event, RequestQueueEvent) and self.state == "Main":
             self.event_manager.Post(BroadcastEvent(self.context["MATCHMAKER"]+"/request-match",
-                                                   json.dumps({"name": self.context["NAME"],
-                                                               "id": None,
-                                                                "return_url": self.context["RETURN_ADDRESS"]})))
+                                                   {"name": self.context["NAME"],
+                                                    "id": None,
+                                                    "return_url": self.context["RETURN_ADDRESS"]}))
 
         # The matchmaker told the client something about it getting on the queue
 
@@ -77,7 +77,7 @@ class Controller():
         if isinstance(event, BoardClickedEvent) and self.state == "Game" and self.own_index == len(self.history) % 2 and [event.x, event.y] not in self.history and self.over == False:
             self.history.append([event.x, event.y])
             self.event_manager.Post(UpdateBoardEvent(event.x, event.y, self.player))
-            self.event_manager.Post(BroadcastEvent(self.opponent+"/make-move", json.dumps(self.history)))
+            self.event_manager.Post(BroadcastEvent(self.opponent+"/make-move", self.history))
 
         # Handle move coming in over network
         

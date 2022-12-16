@@ -28,7 +28,7 @@ class Broadcaster():
             # Catch network errors
 
             try:
-                result = requests.post(event.target, event.payload).json()
+                result = requests.post(event.target, json=event.payload).json()
             except: # <- bad form, but justified by variety of potential errors
                 result = None
 
