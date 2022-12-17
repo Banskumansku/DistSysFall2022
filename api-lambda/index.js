@@ -3,23 +3,35 @@ const axios = require('axios');
 
 exports.handler = async (event) => {
     const options = ["https://rough-sea-6787.fly.dev/request-match", "https://autumn-thunder-7459.fly.dev/request-match", "https://hidden-haze-6040.fly.dev/request-match"]
-
+    console.log(event.body)
     try {
         const randomInt = getRandomInt(3)
         console.log(randomInt)
-        const asd = await axios.post(options[randomInt], event.body)
-        console.log(asd.data)
+        const asd = await axios.post(options[randomInt], event.body, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        //console.log(asd.data)
         return getResponse(asd.data);
     } catch (error) {
         try {
-            const asd = await axios.post(options[getRandomInt(3)], event.body)
+            const asd = await axios.post(options[getRandomInt(3)], event.body, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             return getResponse(asd.data);
         } catch (error) {
             try {
-                const asd = await axios.post(options[getRandomInt(3)], event.body)
+                const asd = await axios.post(options[getRandomInt(3)], event.body, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                 return getResponse(asd.data);
             } catch (error) {
-               return getResponse("error")
+                return getResponse("error")
             }
         }
     }

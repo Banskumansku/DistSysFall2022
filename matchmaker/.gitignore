@@ -3,3 +3,5 @@ dist
 .env
 requests
 fly.toml
+fly1.toml
+fly2.toml

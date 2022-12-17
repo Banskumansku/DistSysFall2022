@@ -32,8 +32,28 @@ interface opponentMessage {
     opponents: opponent[]
 }
 
+app.post('/removeFromQueue', async (req: Request, res: Response) => {
+    const body = req.body
+    console.log("removed from queue", req.body)
+    playerQueue = playerQueue.filter(player => player.return_url !== body.return_url)
+    res.sendStatus(200);
+})
+
+app.get('/queue', async (req: Request, res: Response) => {
+    res.send({"queue": playerQueue.length});
+})
+
+app.post('/queueTransfer', async (req: Request, res: Response) => {
+    const body = req.body
+    console.log("added from queue", req.body)
+    playerQueue = playerQueue.filter(player => player.return_url !== req.body.return_url)
+    playerQueue.unshift(body)
+    res.sendStatus(200);
+})
+
 app.post('/request-match', async (req: Request, res: Response) => {
     const body = req.body
+    console.log(req.body)
     //If player wants to enter the queue again they are removed from the original queue
     playerQueue = playerQueue.filter(player => player.return_url !== req.body.return_url)
     const newPlayer = {
@@ -51,8 +71,8 @@ app.post('/request-match', async (req: Request, res: Response) => {
 });
 
 const matchOn = async () => {
-    const player1 = playerQueue.pop()
-    const player2 = playerQueue.pop()
+    const player1 = playerQueue.shift()
+    const player2 = playerQueue.shift()
 
     const player1Message: opponentMessage = {
         opponents: [{
@@ -89,8 +109,10 @@ setInterval(async () => {
         const time = new Date().getTime()
         if (time - playerQueue[0].timestamp >= 1000 * 90) {
             console.log("Player has spent 90 seconds in the queue, dropping from queue")
-            console.log(playerQueue.pop())
-
+            console.log(playerQueue.shift())
+        }
+        else if (time - playerQueue[0].timestamp >= 1000 * 20) {
+            await pollAndSend(playerQueue.shift())
         }
     }
 }, 1000);
@@ -102,6 +124,28 @@ const sendData = async (player: player, opponentMessage: opponentMessage) => {
         console.log(response.data)
     } catch (error) {
         console.log(error)
+    }
+}
+
+const pollAndSend = async (player?: player) => {
+    if (!!player) {
+        const queue1 = await axios.get(`${process.env.queue1Url}/queue`)
+        const queue2 = await axios.get(`${process.env.queue2Url}/queue`)
+        if (queue2.data.queue > 0) {
+            await axios.all([
+                axios.post(`${process.env.queue1Url}/removeFromQueue`, player),
+                axios.post(`${process.env.queue2Url}/queueTransfer`, player)
+            ])
+            console.log("Player moved")
+        } else if (queue1.data > 0) {
+            await axios.all([
+                axios.post(`${process.env.queue2Url}/removeFromQueue`, player),
+                axios.post(`${process.env.queue1Url}/queueTransfer`, player)
+            ])
+            console.log("Player moved")
+        } else {
+            playerQueue.unshift(player)
+        }
     }
 }
 
